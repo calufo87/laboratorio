@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}*{box-sizing:border-box}</style>
+<title>Laboratorio de Imágenes Mentales</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: una columna tipo cuaderno de laboratorio; lista de ejercicios -> vista de ejercicio con "escenario" central */
+:root{
+  --bg:#F2F3F8; --surface:#FFFFFF; --surface2:#E8EBF4; --ink:#151A2E; --muted:#596079; --line:#D6DAE8;
+  --accent:#2F45D6; --accent-ink:#FFFFFF; --accent-soft:#E1E5FB;
+  --warm:#D7801F; --warm-soft:#FBEAD5;
+  --ok:#1D8758; --ok-soft:#DCF1E6; --bad:#C23B34; --bad-soft:#F8DFDC;
+  --ft:#CBD3FB; --fx:#8796EE; --fz:#4559D3; --edge:#151A2E;
+  --c1:#D2453B; --c2:#2F6FD6; --c3:#2A9A5F; --c4:#DE9C12; --c5:#8A4FD1; --c6:#1C98A4;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1120; --surface:#171B2F; --surface2:#20253D; --ink:#E7E9F4; --muted:#9BA1BA; --line:#2C3253;
+  --accent:#8191FF; --accent-ink:#0E1120; --accent-soft:#252C57;
+  --warm:#F2A24C; --warm-soft:#3A2A16;
+  --ok:#4CC48B; --ok-soft:#173528; --bad:#F27D74; --bad-soft:#3D1D1B;
+  --ft:#BCC5FF; --fx:#7D8DF5; --fz:#4352B5; --edge:#0E1120;
+  --c1:#F06C62; --c2:#5E92F0; --c3:#4CC48B; --c4:#F2B83E; --c5:#AE7FF0; --c6:#3FC0CC;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0E1120; --surface:#171B2F; --surface2:#20253D; --ink:#E7E9F4; --muted:#9BA1BA; --line:#2C3253;
+  --accent:#8191FF; --accent-ink:#0E1120; --accent-soft:#252C57;
+  --warm:#F2A24C; --warm-soft:#3A2A16;
+  --ok:#4CC48B; --ok-soft:#173528; --bad:#F27D74; --bad-soft:#3D1D1B;
+  --ft:#BCC5FF; --fx:#7D8DF5; --fz:#4352B5; --edge:#0E1120;
+  --c1:#F06C62; --c2:#5E92F0; --c3:#4CC48B; --c4:#F2B83E; --c5:#AE7FF0; --c6:#3FC0CC;
+  color-scheme:dark }
+
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(2rem,6vw,3.1rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,4vw,2rem);font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.15rem;font-weight:600}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.top{display:flex;flex-direction:column;gap:12px}
+.lede{max-width:62ch;color:var(--muted);font-size:1.05rem}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.tab{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:10px 18px;cursor:pointer;display:flex;gap:10px;align-items:center}
+.tab span{font-family:var(--mono);font-size:.8rem;color:var(--muted);font-weight:500}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab[aria-selected="true"] span{color:var(--bg);opacity:.75}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.intro{display:flex;flex-direction:column;gap:6px;max-width:66ch}
+.intro p{color:var(--muted)}
+.list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.list{grid-template-columns:1fr}}
+.card{font:inherit;color:inherit;text-align:left;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .15s, transform .15s}
+.card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.num{font-family:var(--mono);font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.ct{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ctitle{font-weight:700}
+.cdesc{font-size:.88rem;color:var(--muted)}
+.status{font-family:var(--mono);font-size:.75rem;padding:3px 8px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.status.none{color:var(--muted);border:1px dashed var(--line)}
+.status.good{background:var(--ok-soft);color:var(--ok)}
+.status.part{background:var(--warm-soft);color:var(--warm)}
+.status.bad{background:var(--bad-soft);color:var(--bad)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.panel p{color:var(--muted);max-width:66ch}
+.chartbox{overflow-x:auto}
+.chartbox svg{width:100%;min-width:320px;height:auto;display:block}
+.axis{stroke:var(--line)}
+.grid-line{stroke:var(--line);stroke-dasharray:2 4}
+.tick{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.axlabel{fill:var(--muted);font-family:var(--body);font-size:12px}
+.pt-ok{fill:var(--accent)} .pt-bad{fill:var(--bad)}
+.trend{stroke:var(--accent);stroke-width:2;stroke-dasharray:6 5;fill:none;opacity:.7}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+.ex{display:flex;flex-direction:column;gap:14px}
+.back{align-self:flex-start;font:inherit;background:none;border:none;color:var(--accent);cursor:pointer;padding:4px 0;font-weight:700}
+.inst{font-size:1.05rem;max-width:66ch}
+.concept{font-size:.92rem;color:var(--muted);max-width:66ch;border-left:3px solid var(--warm);padding-left:12px}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px clamp(14px,3vw,28px);display:flex;flex-direction:column;gap:18px;align-items:center;min-height:300px}
+.phase{font-weight:700;text-align:center;font-size:1.05rem}
+.sub{color:var(--muted);text-align:center;font-size:.92rem;max-width:56ch}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.btn{font:inherit;font-weight:700;border-radius:8px;padding:11px 18px;cursor:pointer;border:1px solid var(--line);background:var(--surface2);color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:none}
+.startbox{display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;flex:1;text-align:center}
+.timer{width:min(360px,100%);height:6px;border-radius:3px;background:var(--surface2);overflow:hidden}
+.timer i{display:block;height:100%;background:var(--warm);animation:shrink linear forwards;transform-origin:left}
+@keyframes shrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+.grid{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:6px;width:min(340px,100%)}
+.cell{aspect-ratio:1;border-radius:6px;border:1px solid var(--line);background:var(--surface2);cursor:pointer;padding:0;transition:background .12s}
+.cell:disabled{cursor:default}
+.cell.lit{background:var(--warm);border-color:var(--warm)}
+.cell.sel{background:var(--accent);border-color:var(--accent)}
+.cell.hit{background:var(--ok);border-color:var(--ok)}
+.cell.miss{outline:3px dashed var(--ok);outline-offset:-5px}
+.cell.wrong{background:var(--bad);border-color:var(--bad)}
+
+.board{position:relative;width:min(420px,100%);aspect-ratio:4/3;background:var(--surface2);border-radius:10px}
+.blk{position:absolute;width:15%;aspect-ratio:1;border-radius:6px;border:none;background:var(--fz);cursor:pointer;padding:0;color:var(--accent-ink);font-family:var(--mono);font-weight:500;font-size:.9rem;transition:background .1s}
+.blk.flash{background:var(--warm)}
+.blk.ok{background:var(--ok)} .blk.no{background:var(--bad)}
+.blk:disabled{cursor:default}
+
+.bigdigit{font-family:var(--display);font-size:clamp(4rem,14vw,6.5rem);font-weight:800;min-height:1.2em;line-height:1.2;font-variant-numeric:tabular-nums}
+.inp{font:inherit;font-family:var(--mono);font-size:1.4rem;letter-spacing:.2em;text-align:center;padding:10px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:min(300px,100%)}
+
+.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;width:100%}
+.word{font:inherit;font-weight:700;padding:12px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);text-align:center}
+button.word{cursor:pointer}
+.word.sel{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.word.hit{background:var(--ok);color:var(--accent-ink);border-color:var(--ok)}
+.word.fa{background:var(--bad);color:var(--accent-ink);border-color:var(--bad)}
+.word.missed{outline:3px dashed var(--ok);outline-offset:-4px}
+
+.island{width:min(460px,100%);height:auto}
+.sea{fill:var(--surface2)} .land{fill:var(--ok-soft);stroke:var(--ok);stroke-width:.6}
+.lm{fill:var(--warm)} .lmtext{fill:var(--ink);font-family:var(--body);font-size:4.2px;font-weight:700}
+.choices{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+.pairs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:min(480px,100%)}
+@media (max-width:420px){.pairs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pairc{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);font-weight:700}
+.shp{width:52px;height:52px}
+.shapebtn{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px;cursor:pointer}
+.shapebtn.ok{border-color:var(--ok);background:var(--ok-soft)} .shapebtn.no{border-color:var(--bad);background:var(--bad-soft)}
+
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;width:min(560px,100%)}
+.figbox{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px}
+.figbox span{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.fig{width:100%;max-width:230px;height:auto;aspect-ratio:1}
+.glyph{font-family:var(--display);font-weight:800;font-size:86px;fill:var(--ink)}
+.poly{fill:var(--accent);stroke:var(--bg);stroke-width:1.5}
+.ft{fill:var(--ft)} .fx{fill:var(--fx)} .fz{fill:var(--fz)}
+.cube polygon{stroke:var(--edge);stroke-width:1;stroke-linejoin:round}
+kbd{font-family:var(--mono);font-size:.8rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;background:var(--surface2)}
+
+.fb{width:100%;display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center;border-top:1px solid var(--line);padding-top:16px}
+.fb-score{font-family:var(--display);font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums}
+.fb.good .fb-score{color:var(--ok)} .fb.part .fb-score{color:var(--warm)} .fb.bad .fb-score{color:var(--bad)}
+.fb p{max-width:58ch}
+.steplist{display:flex;flex-direction:column;gap:10px;width:min(560px,100%);margin:0;padding-left:1.3em}
+.steplist li{font-size:1.08rem}
+.conf{display:flex;flex-direction:column;gap:8px;align-items:center}
+.conf .row .btn.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.scene{width:min(560px,100%);height:auto;border-radius:10px;display:block}
+.caption{font-size:1.15rem;font-weight:700;text-align:center;max-width:46ch;min-height:3.2em}
+.sc-bg{fill:var(--surface2)} .sc-wall{fill:var(--bg)} .sc-line{stroke:var(--ink);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.sc-ink{fill:var(--ink)} .sc-soft{fill:var(--line)} .sc-txt{fill:var(--ink);font-family:var(--mono);font-size:15px;font-weight:500}
+.sc-board{fill:#1f2a26} .sc-chalk{stroke:#EDEFE6;stroke-width:2;fill:none}
+.review{width:100%;display:flex;flex-direction:column;gap:6px;text-align:left;max-width:600px}
+.review div{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:8px 10px;border-radius:8px;background:var(--surface2);font-size:.92rem}
+.review b{font-family:var(--mono)}
+.review .ok b{color:var(--ok)} .review .no b{color:var(--bad)}
+.reflect{width:100%;max-width:600px;display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--warm-soft);border-radius:10px;padding:14px 16px}
+.reflect p{color:var(--ink)}
+footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.reset{font:inherit;background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.timer i{animation:none}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">Dinámica de aprendizaje · Psicología cognitiva</p>
+    <h1>Laboratorio de imágenes mentales</h1>
+    <p class="lede">Dos actividades para hacer en grupo y veinte ejercicios para experimentar cómo la mente guarda imágenes, las recorre y las gira. Puede hacerlos en orden o elegir cualquiera. Sus resultados se guardan solo en este dispositivo.</p>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="clase" id="tab-c">Actividades en clase <span id="cnt-c">0/2</span></button>
+      <button class="tab" role="tab" data-tab="memoria" id="tab-m">Memoria visual <span id="cnt-m">0/10</span></button>
+      <button class="tab" role="tab" data-tab="rotacion" id="tab-r">Rotación mental <span id="cnt-r">0/10</span></button>
+    </nav>
+  </header>
+  <main id="app"></main>
+  <footer>
+    <span>Preparado por Carlos Luis Chavarria Sibaja · Universidad Hispanoamericana</span>
+    <span id="resetwrap"><button class="reset" id="reset">Borrar mis resultados</button></span>
+  </footer>
+</div>
+
+<script>
+const KEY = 'lab-imagenes-v1';
+const app = document.getElementById('app');
+let results = {};
+try { results = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { results = {}; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(results)); } catch (e) {} };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const sample = (a, k) => shuffle(a).slice(0, k);
+const range = n => Array.from({ length: n }, (_, i) => i);
+const fmt = (x, d = 2) => x.toFixed(d).replace('.', ',');
+let runId = 0;
+let tab = location.hash === '#rotacion' ? 'rotacion' : (location.hash === '#memoria' ? 'memoria' : 'clase');
+
+/* ---------- Ejercicios ---------- */
+const MEM = [
+  { id:'m1', type:'grid', n:3, k:3, ms:2000, title:'Casillas iluminadas · 3×3', inst:'Se iluminarán algunas casillas por unos segundos. Después márquelas usted.', concept:'Memoria de trabajo visoespacial: guardar posiciones como si fueran una foto.' },
+  { id:'m2', type:'grid', n:4, k:5, ms:2500, title:'Casillas iluminadas · 4×4', inst:'Igual que el anterior, pero con más casillas y más opciones.', concept:'Con más elementos, la imagen mental pierde nitidez y cuesta mantenerla.' },
+  { id:'m3', type:'grid', n:5, k:7, ms:3000, title:'Casillas iluminadas · 5×5', inst:'La versión más difícil. Intente ver el patrón como una figura completa y no casilla por casilla.', concept:'Agrupar la información en una sola forma ayuda a no saturar la memoria de trabajo.' },
+  { id:'m4', type:'corsi', len:4, rev:false, title:'Bloques de Corsi · 4', inst:'Los bloques se encenderán uno por uno. Después tóquelos en el mismo orden.', concept:'Memoria espacial en secuencia, parecida a recordar un camino.' },
+  { id:'m5', type:'corsi', len:5, rev:false, title:'Bloques de Corsi · 5', inst:'Ahora la secuencia tiene cinco bloques.', concept:'La capacidad de la memoria de trabajo visoespacial suele rondar los 5 elementos.' },
+  { id:'m6', type:'corsi', len:4, rev:true, title:'Corsi al revés', inst:'Observe la secuencia y tóquela en orden inverso: del último bloque al primero.', concept:'No solo guardamos la imagen: también la manipulamos en la mente.' },
+  { id:'m7', type:'digits', len:7, title:'Serie de números', inst:'Aparecerán siete números uno por uno. Después escríbalos en el mismo orden.', concept:'Compárelo con los ejercicios visuales: aquí casi todos repetimos los números en voz baja (código verbal).' },
+  { id:'m8', type:'words', title:'Palabras concretas y abstractas', inst:'Lea la lista de palabras. Después marque cuáles estaban en la lista.', concept:'Código dual (Paivio): las palabras que podemos imaginar, como «guitarra», se recuerdan mejor que las abstractas.' },
+  { id:'m9', type:'island', title:'El mapa de la isla', inst:'Estudie el mapa. Luego, sin verlo, responda qué lugares quedan más cerca entre sí.', concept:'Escaneo mental (Kosslyn): recorremos el mapa en la mente como si lo estuviéramos mirando.' },
+  { id:'m10', type:'pairs', title:'Pares palabra–figura', inst:'Memorice qué figura va con cada palabra. Truco: imagine la palabra dentro de la figura.', concept:'Código dual: unir palabra e imagen crea dos caminos para recordar.' }
+];
+const LETTER = (g) => ({ kind:'letter', glyph:g });
+const P = { F:[[1,0],[2,0],[0,1],[1,1],[1,2]], L:[[0,0],[0,1],[0,2],[0,3],[1,3],[2,3]], Z:[[0,0],[1,0],[1,1],[1,2],[2,2],[2,3]] };
+const C3 = { A:[[0,0,0],[1,0,0],[2,0,0],[2,1,0],[2,2,0],[2,3,0],[2,3,1],[2,3,2],[3,3,2]],
+             B:[[0,0,0],[0,0,1],[0,0,2],[0,1,2],[0,2,2],[1,2,2],[2,2,2],[2,3,2],[2,4,2]] };
+const ROT = [
+  { id:'r1', fig:LETTER('R'), angle:0, mirror:false, title:'Letra R', concept:'Punto de partida: sin giro, la decisión es casi inmediata.' },
+  { id:'r2', fig:LETTER('F'), angle:60, mirror:true, title:'Letra F', concept:'Cooper y Shepard usaron letras giradas: el tiempo sube con el ángulo.' },
+  { id:'r3', fig:LETTER('G'), angle:120, mirror:false, title:'Letra G', concept:'A más giro, más «recorrido» tiene que hacer la imagen mental.' },
+  { id:'r4', fig:{kind:'poly', cells:P.F}, angle:45, mirror:false, title:'Figura plana F', concept:'Figuras sin significado: no hay palabra que ayude, solo la imagen.' },
+  { id:'r5', fig:{kind:'poly', cells:P.L}, angle:90, mirror:true, title:'Figura plana L', concept:'Distinguir una figura de su espejo obliga a girarla mentalmente.' },
+  { id:'r6', fig:{kind:'poly', cells:P.Z}, angle:180, mirror:true, title:'Figura plana escalera', concept:'180° es el giro más largo posible en el plano.' },
+  { id:'r7', fig:{kind:'cube', cells:C3.A}, angle:40, mirror:false, title:'Bloques 3D · A', concept:'Shepard y Metzler (1971): figuras de cubos en tres dimensiones.' },
+  { id:'r8', fig:{kind:'cube', cells:C3.B}, angle:80, mirror:true, title:'Bloques 3D · B', concept:'La mente gira el objeto poco a poco, como si fuera real.' },
+  { id:'r9', fig:{kind:'cube', cells:C3.A}, angle:120, mirror:true, title:'Bloques 3D · A girada', concept:'Más ángulo, más tiempo: el tiempo crece en línea recta.' },
+  { id:'r10', fig:{kind:'cube', cells:C3.B}, angle:160, mirror:false, title:'Bloques 3D · B girada', concept:'El giro más difícil de la serie. Compare su tiempo con el ejercicio 7.' }
+];
+const CLASE = [
+  { id:'c1', type:'morning', title:'Recorrido mental de la mañana', inst:'Cierre los ojos y vuelva a «ver» lo que hizo hoy desde que se despertó. El facilitador irá pasando las etapas; en cada una, responda en silencio y marque qué tan seguro está.', concept:'Escaneo mental y memoria episódica: recordar es recorrer la escena otra vez, y en ese recorrido la mente rellena los vacíos.' },
+  { id:'c2', type:'story', title:'La mañana de Sofía', inst:'Verá una historia corta en seis imágenes. Obsérvelas con atención: después vienen preguntas de memoria, y algunas son más tramposas de lo que parecen.', concept:'Código dual y memoria reconstructiva: guardamos la historia con imágenes y palabras, y a veces «recordamos» detalles que nunca vimos.' }
+];
+const ALL = [...MEM, ...ROT, ...CLASE];
+const listOf = id => id[0] === 'r' ? ROT : (id[0] === 'c' ? CLASE : MEM);
+
+/* ---------- Estado de la lista ---------- */
+function statusOf(ex) {
+  const r = results[ex.id];
+  if (!r) return '<span class="status none">Pendiente</span>';
+  if (ex.id[0] === 'r') return `<span class="status ${r.score ? 'good' : 'bad'}">${r.score ? '✓' : '✗'} ${fmt(r.rt / 1000, 1)} s</span>`;
+  const cls = r.score === r.max ? 'good' : (r.score / r.max >= .5 ? 'part' : 'bad');
+  return `<span class="status ${cls}">${r.score}/${r.max}</span>`;
+}
+function updateCounts() {
+  document.getElementById('cnt-m').textContent = MEM.filter(e => results[e.id]).length + '/10';
+  document.getElementById('cnt-r').textContent = ROT.filter(e => results[e.id]).length + '/10';
+  document.getElementById('cnt-c').textContent = CLASE.filter(e => results[e.id]).length + '/2';
+}
+function setTab(t) {
+  tab = t;
+  document.getElementById('tab-c').setAttribute('aria-selected', t === 'clase');
+  document.getElementById('tab-m').setAttribute('aria-selected', t === 'memoria');
+  document.getElementById('tab-r').setAttribute('aria-selected', t === 'rotacion');
+  try { history.replaceState(null, '', '#' + t); } catch (e) {}
+}
+
+function renderHome() {
+  runId++;
+  setTab(tab);
+  updateCounts();
+  const list = tab === 'memoria' ? MEM : (tab === 'clase' ? CLASE : ROT);
+  const intro = tab === 'clase'
+    ? `<h2>Actividades en clase</h2><p>Dos actividades de memoria para hacer en grupo y proyectadas. Primero el recorrido mental de la mañana; después la historia con imágenes.</p>`
+    : tab === 'memoria'
+    ? `<h2>Memoria visual</h2><p>Ejercicios para retener y recorrer imágenes en la mente. Los primeros son sencillos y la dificultad sube poco a poco.</p>`
+    : `<h2>Rotación mental</h2><p>Va a ver una figura modelo y otra girada. Decida lo más rápido que pueda si es la misma figura o su imagen en espejo. Al final, el gráfico muestra si su tiempo aumentó con el ángulo, como en los experimentos clásicos.</p>`;
+  app.innerHTML = `<section class="ex">
+    <div class="intro">${intro}</div>
+    <div class="list">${list.map((e, i) => `
+      <button class="card" data-open="${e.id}">
+        <span class="num">${String(i + 1).padStart(2, '0')}</span>
+        <span class="ct"><span class="ctitle">${e.title}</span><span class="cdesc">${e.id[0] === 'r' ? 'Giro de ' + e.angle + '°' : e.concept}</span></span>
+        ${statusOf(e)}
+      </button>`).join('')}</div>
+    ${tab === 'rotacion' ? chartPanel() : ''}
+  </section>`;
+}
+
+/* ---------- Gráfico de rotación ---------- */
+function chartPanel() {
+  const pts = ROT.filter(e => results[e.id]).map(e => ({ a: e.angle, t: results[e.id].rt / 1000, ok: !!results[e.id].score }));
+  const W = 560, H = 300, L = 52, R = 18, T = 16, B = 46;
+  const maxT = Math.max(3, Math.ceil(Math.max(0, ...pts.map(p => p.t))));
+  const step = maxT <= 4 ? 1 : (maxT <= 10 ? 2 : 5);
+  const yMax = Math.ceil(maxT / step) * step;
+  const x = a => L + (a / 180) * (W - L - R);
+  const y = t => T + (1 - t / yMax) * (H - T - B);
+  let g = '';
+  for (let v = 0; v <= yMax; v += step) g += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="tick" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v} s</text>`;
+  [0, 45, 90, 135, 180].forEach(a => g += `<text class="tick" x="${x(a)}" y="${H - B + 18}" text-anchor="middle">${a}°</text>`);
+  g += `<line class="axis" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/><line class="axis" x1="${L}" x2="${L}" y1="${T}" y2="${H - B}"/>`;
+  g += `<text class="axlabel" x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle">Ángulo de giro</text>`;
+  const ok = pts.filter(p => p.ok);
+  let note = 'Complete al menos tres ejercicios de rotación para ver la tendencia.';
+  if (ok.length >= 3) {
+    const n = ok.length, mx = ok.reduce((s, p) => s + p.a, 0) / n, my = ok.reduce((s, p) => s + p.t, 0) / n;
+    const sxx = ok.reduce((s, p) => s + (p.a - mx) ** 2, 0), sxy = ok.reduce((s, p) => s + (p.a - mx) * (p.t - my), 0);
+    if (sxx > 0) {
+      const b = sxy / sxx, a0 = my - b * mx;
+      const y0 = Math.min(yMax, Math.max(0, a0)), y1 = Math.min(yMax, Math.max(0, a0 + b * 180));
+      g += `<line class="trend" x1="${x(0)}" y1="${y(y0)}" x2="${x(180)}" y2="${y(y1)}"/>`;
+      const per45 = b * 45;
+      note = per45 > 0.05
+        ? `Su tiempo subió unos ${fmt(per45, 2)} s por cada 45° de giro. Eso es lo que predice la rotación mental: mientras más girada está la figura, más tarda la mente en «girarla» de vuelta.`
+        : 'En sus respuestas el tiempo casi no cambió con el ángulo. Puede pasar con pocos ensayos o si respondió muy rápido; intente repetir algunos ejercicios con calma.';
+    }
+  }
+  pts.forEach(p => g += `<circle class="${p.ok ? 'pt-ok' : 'pt-bad'}" cx="${x(p.a)}" cy="${y(Math.min(p.t, yMax))}" r="6"><title>${p.a}° · ${fmt(p.t)} s</title></circle>`);
+  return `<div class="panel">
+    <h3>Sus tiempos según el ángulo</h3>
+    <div class="chartbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de tiempo de respuesta según ángulo">${g}</svg></div>
+    <div class="legend"><span><i style="background:var(--accent)"></i>Respuesta correcta</span><span><i style="background:var(--bad)"></i>Respuesta incorrecta</span><span>Línea punteada: tendencia de las respuestas correctas</span></div>
+    <p>${note}</p>
+  </div>`;
+}
+
+/* ---------- Vista de ejercicio ---------- */
+function openEx(id) {
+  const ex = ALL.find(e => e.id === id);
+  const isRot = id[0] === 'r';
+  const list = listOf(id);
+  const idx = list.indexOf(ex);
+  const section = isRot ? 'Rotación mental' : (id[0] === 'c' ? 'Actividades en clase' : 'Memoria visual');
+  runId++;
+  const rid = runId;
+  app.innerHTML = `<section class="ex">
+    <button class="back" data-back>← Volver a la lista</button>
+    <p class="eyebrow">${section} · ${id[0] === 'c' ? 'Actividad' : 'Ejercicio'} ${idx + 1} de ${list.length}</p>
+    <h2>${ex.title}</h2>
+    <p class="inst">${isRot ? '¿La figura de la derecha es la misma que el modelo, solo que girada, o es su imagen en espejo? Responda lo más rápido que pueda sin equivocarse.' : ex.inst}</p>
+    <p class="concept"><strong>Qué se trabaja:</strong> ${ex.concept}</p>
+    <div class="stage" id="stage"></div>
+  </section>`;
+  window.scrollTo({ top: 0 });
+  const st = document.getElementById('stage');
+  const runner = isRot ? runRot : RUN[ex.type];
+  runner(ex, st, rid);
+}
+const alive = rid => rid === runId;
+function startBox(st, text, label = 'Comenzar') {
+  st.innerHTML = `<div class="startbox"><p class="sub">${text}</p><button class="btn primary" id="go">${label}</button></div>`;
+  return new Promise(res => st.querySelector('#go').addEventListener('click', res, { once: true }));
+}
+function timerBar(ms) { return `<div class="timer"><i style="animation-duration:${ms}ms"></i></div>`; }
+function finish(ex, st, rid, score, max, note, extra = {}) {
+  if (!alive(rid)) return;
+  results[ex.id] = Object.assign({ score, max, at: Date.now() }, extra);
+  save(); updateCounts();
+  const ratio = max ? score / max : 0;
+  const cls = ratio === 1 ? 'good' : (ratio >= .5 ? 'part' : 'bad');
+  const list = listOf(ex.id);
+  const last = list.indexOf(ex) === list.length - 1;
+  const div = document.createElement('div');
+  div.className = 'fb ' + cls;
+  div.innerHTML = `<p class="fb-score">${extra.label || (score + ' / ' + max)}</p><p>${note}</p>
+    <div class="row"><button class="btn" data-retry="${ex.id}">Repetir</button>
+    <button class="btn primary" ${last ? 'data-back' : `data-open="${list[list.indexOf(ex) + 1].id}"`}>${last ? 'Ver resultados' : 'Siguiente ejercicio →'}</button></div>`;
+  st.appendChild(div);
+}
+
+/* ---------- Memoria ---------- */
+const RUN = {};
+RUN.grid = async (ex, st, rid) => {
+  await startBox(st, `Se iluminarán ${ex.k} casillas durante ${ex.ms / 1000} segundos.`);
+  if (!alive(rid)) return;
+  const N = ex.n * ex.n;
+  st.innerHTML = `<p class="phase">Observe…</p>${timerBar(ex.ms)}<div class="grid" style="--n:${ex.n}">${range(N).map(i => `<button class="cell" data-i="${i}" disabled aria-label="Casilla ${i + 1}"></button>`).join('')}</div><div class="row" id="acts"></div>`;
+  const cells = [...st.querySelectorAll('.cell')];
+  const target = new Set(sample(range(N), ex.k));
+  target.forEach(i => cells[i].classList.add('lit'));
+  await sleep(ex.ms);
+  if (!alive(rid)) return;
+  target.forEach(i => cells[i].classList.remove('lit'));
+  st.querySelector('.timer').remove();
+  const phase = st.querySelector('.phase');
+  phase.textContent = `Marque las ${ex.k} casillas que estaban iluminadas`;
+  const sel = new Set();
+  cells.forEach(c => { c.disabled = false; c.onclick = () => { const i = +c.dataset.i; sel.has(i) ? sel.delete(i) : sel.add(i); c.classList.toggle('sel'); }; });
+  const acts = st.querySelector('#acts');
+  acts.innerHTML = '<button class="btn primary" id="chk">Revisar</button>';
+  acts.querySelector('#chk').onclick = () => {
+    acts.innerHTML = '';
+    cells.forEach((c, i) => { c.disabled = true; c.classList.remove('sel');
+      if (target.has(i) && sel.has(i)) c.classList.add('hit');
+      else if (target.has(i)) c.classList.add('miss');
+      else if (sel.has(i)) c.classList.add('wrong'); });
+    const hits = [...sel].filter(i => target.has(i)).length;
+    const wrong = sel.size - hits;
+    phase.textContent = 'Verde: acierto · Punteado: se le pasó · Rojo: no estaba';
+    finish(ex, st, rid, hits, ex.k, hits === ex.k && !wrong ? '¡Patrón completo! Su imagen mental fue bastante nítida.' : `Acertó ${hits} de ${ex.k}${wrong ? ` y marcó ${wrong} que no estaba${wrong > 1 ? 'n' : ''}` : ''}. ¿Recordó casillas sueltas o una forma general?`);
+  };
+};
+
+const CORSI_POS = [[8,12],[44,6],[76,18],[24,42],[58,38],[84,52],[10,74],[46,70],[74,80]];
+RUN.corsi = async (ex, st, rid) => {
+  await startBox(st, `Se encenderán ${ex.len} bloques, uno tras otro. Después tóquelos ${ex.rev ? '<strong>en orden inverso</strong> (del último al primero)' : 'en el mismo orden'}.`);
+  if (!alive(rid)) return;
+  st.innerHTML = `<p class="phase">Observe la secuencia…</p><div class="board">${CORSI_POS.map((p, i) => `<button class="blk" data-i="${i}" style="left:${p[0]}%;top:${p[1]}%" disabled aria-label="Bloque ${i + 1}"></button>`).join('')}</div><p class="sub" id="cnt"></p>`;
+  const blks = [...st.querySelectorAll('.blk')];
+  const seq = sample(range(9), ex.len);
+  await sleep(700);
+  for (const i of seq) {
+    if (!alive(rid)) return;
+    blks[i].classList.add('flash'); await sleep(700);
+    blks[i].classList.remove('flash'); await sleep(350);
+  }
+  if (!alive(rid)) return;
+  const phase = st.querySelector('.phase'), cnt = st.querySelector('#cnt');
+  phase.textContent = ex.rev ? 'Su turno: tóquelos del último al primero' : 'Su turno: tóquelos en el mismo orden';
+  const expected = ex.rev ? [...seq].reverse() : seq;
+  const picks = [];
+  cnt.textContent = `0 de ${ex.len}`;
+  blks.forEach(b => { b.disabled = false; b.onclick = async () => {
+    if (picks.length >= ex.len) return;
+    const i = +b.dataset.i; picks.push(i); cnt.textContent = `${picks.length} de ${ex.len}`;
+    b.classList.add('flash'); setTimeout(() => b.classList.remove('flash'), 200);
+    if (picks.length === ex.len) {
+      await sleep(250);
+      if (!alive(rid)) return;
+      blks.forEach(x => x.disabled = true);
+      let score = 0;
+      expected.forEach((e, k) => { if (picks[k] === e) score++; blks[e].textContent = k + 1; blks[e].classList.add(picks[k] === e ? 'ok' : 'no'); });
+      phase.textContent = 'Los números muestran el orden correcto';
+      cnt.textContent = 'Verde: en el lugar correcto · Rojo: equivocado';
+      finish(ex, st, rid, score, ex.len, score === ex.len ? 'Secuencia perfecta.' : `Acertó ${score} posiciones de ${ex.len}. ¿Se imaginó un camino o una figura que unía los bloques?`);
+    }
+  }; });
+};
+
+RUN.digits = async (ex, st, rid) => {
+  await startBox(st, `Aparecerán ${ex.len} números, uno por uno.`);
+  if (!alive(rid)) return;
+  st.innerHTML = `<p class="phase">Observe…</p><div class="bigdigit" id="dg"></div>`;
+  const dg = st.querySelector('#dg');
+  const seq = range(ex.len).map(() => Math.floor(Math.random() * 10));
+  await sleep(500);
+  for (const d of seq) {
+    if (!alive(rid)) return;
+    dg.textContent = d; await sleep(900); dg.textContent = ''; await sleep(250);
+  }
+  if (!alive(rid)) return;
+  st.innerHTML = `<p class="phase">Escriba los números en orden</p><form id="f" class="row"><input class="inp" id="ans" inputmode="numeric" autocomplete="off" maxlength="${ex.len}" aria-label="Respuesta"><button class="btn primary">Revisar</button></form>`;
+  const inp = st.querySelector('#ans'); inp.focus();
+  st.querySelector('#f').addEventListener('submit', e => {
+    e.preventDefault();
+    const a = inp.value.replace(/\D/g, '');
+    let score = 0; seq.forEach((d, i) => { if (+a[i] === d && a[i] !== undefined) score++; });
+    st.querySelector('#f').remove();
+    st.querySelector('.phase').innerHTML = `La serie era <strong style="font-family:var(--mono);letter-spacing:.15em">${seq.join('')}</strong>`;
+    finish(ex, st, rid, score, ex.len, 'Pregunta para la reflexión: ¿repitió los números en voz baja o los «vio»? Casi siempre usamos el código verbal para esto.');
+  });
+};
+
+const CONCRETAS = ['manzana','guitarra','perro','puente','vela','zapato','volcán','bicicleta','paraguas','tortuga','escalera','sandía'];
+const ABSTRACTAS = ['justicia','idea','verdad','destino','motivo','lealtad','criterio','esencia','virtud','razón','suerte','concepto'];
+RUN.words = async (ex, st, rid) => {
+  await startBox(st, 'Tendrá 15 segundos para leer 10 palabras. Después tendrá que reconocerlas entre otras.');
+  if (!alive(rid)) return;
+  const c = shuffle(CONCRETAS), a = shuffle(ABSTRACTAS);
+  const studied = shuffle([...c.slice(0, 5), ...a.slice(0, 5)]);
+  const foils = [...c.slice(5, 10), ...a.slice(5, 10)];
+  st.innerHTML = `<p class="phase">Lea y memorice</p>${timerBar(15000)}<div class="words">${studied.map(w => `<div class="word">${w}</div>`).join('')}</div>`;
+  await sleep(15000);
+  if (!alive(rid)) return;
+  const test = shuffle([...studied, ...foils]);
+  const sel = new Set();
+  st.innerHTML = `<p class="phase">Marque las palabras que estaban en la lista</p><div class="words">${test.map(w => `<button class="word" data-w="${w}">${w}</button>`).join('')}</div><div class="row" id="acts"><button class="btn primary" id="chk">Revisar</button></div>`;
+  st.querySelectorAll('button.word').forEach(b => b.onclick = () => { const w = b.dataset.w; sel.has(w) ? sel.delete(w) : sel.add(w); b.classList.toggle('sel'); });
+  st.querySelector('#chk').onclick = () => {
+    st.querySelector('#acts').remove();
+    const S = new Set(studied);
+    let hc = 0, ha = 0, fa = 0;
+    st.querySelectorAll('button.word').forEach(b => { b.disabled = true; b.classList.remove('sel'); const w = b.dataset.w;
+      if (S.has(w) && sel.has(w)) { b.classList.add('hit'); CONCRETAS.includes(w) ? hc++ : ha++; }
+      else if (S.has(w)) b.classList.add('missed');
+      else if (sel.has(w)) { b.classList.add('fa'); fa++; } });
+    st.querySelector('.phase').textContent = 'Verde: acierto · Punteado: se le pasó · Rojo: no estaba';
+    const score = Math.max(0, hc + ha - fa);
+    finish(ex, st, rid, score, 10, `Concretas reconocidas: <strong>${hc} de 5</strong> · Abstractas: <strong>${ha} de 5</strong>${fa ? ` · Falsas alarmas: ${fa} (se restan)` : ''}. Si recordó más concretas, coincide con la Teoría del Código Dual: esas palabras se guardan con imagen y con palabra.`);
+  };
+};
+
+const LMS = [ ['Choza',22,30],['Pozo',70,22],['Árbol',32,72],['Roca',82,70],['Faro',56,48],['Muelle',12,56] ];
+function islandSVG() {
+  return `<svg class="island" viewBox="0 0 100 92" role="img" aria-label="Mapa de la isla">
+    <rect class="sea" x="0" y="0" width="100" height="92" rx="4"/>
+    <path class="land" d="M8,40 C4,16 30,6 50,9 C75,5 97,18 94,44 C98,70 82,90 56,87 C30,92 4,80 6,60 Z"/>
+    ${LMS.map(([n, x, y]) => `<circle class="lm" cx="${x}" cy="${y}" r="2.6"/><text class="lmtext" x="${x}" y="${y - 4.2}" text-anchor="middle">${n}</text>`).join('')}
+  </svg>`;
+}
+RUN.island = async (ex, st, rid) => {
+  await startBox(st, 'Tendrá 15 segundos para estudiar el mapa. Fíjese bien en dónde está cada lugar.');
+  if (!alive(rid)) return;
+  st.innerHTML = `<p class="phase">Estudie el mapa</p>${timerBar(15000)}${islandSVG()}`;
+  await sleep(15000);
+  if (!alive(rid)) return;
+  const d = (p, q) => Math.hypot(p[1] - q[1], p[2] - q[2]);
+  const qs = [];
+  let guard = 0;
+  while (qs.length < 4 && guard++ < 500) {
+    const [X, Y, Z] = sample(LMS, 3);
+    if (Math.abs(d(X, Y) - d(X, Z)) < 18) continue;
+    if (qs.some(q => q.X === X)) continue;
+    qs.push({ X, Y, Z, ans: d(X, Y) < d(X, Z) ? Y[0] : Z[0] });
+  }
+  let score = 0, k = 0;
+  const times = [];
+  const ask = () => {
+    if (!alive(rid)) return;
+    if (k >= qs.length) {
+      st.innerHTML = `<p class="phase">Así era el mapa</p>${islandSVG()}`;
+      finish(ex, st, rid, score, qs.length, `Para responder, ¿«viajó» con la mente de un lugar a otro? En el experimento de Kosslyn, las personas tardaban más cuando los lugares estaban más lejos: la imagen mental conserva las distancias.`);
+      return;
+    }
+    const q = qs[k];
+    const opts = shuffle([q.Y[0], q.Z[0]]);
+    st.innerHTML = `<p class="eyebrow">Pregunta ${k + 1} de ${qs.length}</p><p class="phase">¿Qué queda más cerca de <strong>${q.X[0]}</strong>?</p><div class="choices">${opts.map(o => `<button class="btn" data-o="${o}">${o}</button>`).join('')}</div><p class="sub" id="fbq"></p>`;
+    const t0 = performance.now();
+    st.querySelectorAll('[data-o]').forEach(b => b.onclick = async () => {
+      times.push(performance.now() - t0);
+      const ok = b.dataset.o === q.ans; if (ok) score++;
+      st.querySelectorAll('[data-o]').forEach(x => x.disabled = true);
+      st.querySelector('#fbq').textContent = ok ? 'Correcto' : `Era ${q.ans}`;
+      await sleep(900); k++; ask();
+    });
+  };
+  ask();
+};
+
+const SHAPES = ['circle','triangle','square','star','rhombus','hexagon'];
+const COLORS = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)'];
+const SHAPE_NAMES = { circle:'círculo', triangle:'triángulo', square:'cuadrado', star:'estrella', rhombus:'rombo', hexagon:'hexágono' };
+function shapeSVG(s, col) {
+  const star = range(10).map(i => { const r = i % 2 ? 9 : 21, a = -Math.PI / 2 + i * Math.PI / 5; return (25 + r * Math.cos(a)).toFixed(1) + ',' + (25 + r * Math.sin(a)).toFixed(1); }).join(' ');
+  const hex = range(6).map(i => { const a = i * Math.PI / 3; return (25 + 20 * Math.cos(a)).toFixed(1) + ',' + (25 + 20 * Math.sin(a)).toFixed(1); }).join(' ');
+  const body = { circle:`<circle cx="25" cy="25" r="19"/>`, triangle:`<polygon points="25,5 45,43 5,43"/>`, square:`<rect x="7" y="7" width="36" height="36" rx="3"/>`, star:`<polygon points="${star}"/>`, rhombus:`<polygon points="25,3 46,25 25,47 4,25"/>`, hexagon:`<polygon points="${hex}"/>` }[s];
+  return `<svg class="shp" viewBox="0 0 50 50" aria-label="${SHAPE_NAMES[s]}" style="fill:${col}">${body}</svg>`;
+}
+const PAIR_WORDS = ['río','reloj','llave','nube','silla','faro','campana','hoja','tambor','espejo'];
+RUN.pairs = async (ex, st, rid) => {
+  await startBox(st, 'Verá 6 palabras, cada una con una figura de color, durante 15 segundos.');
+  if (!alive(rid)) return;
+  const words = sample(PAIR_WORDS, 6), shapes = shuffle(range(6));
+  const pairs = words.map((w, i) => ({ w, s: shapes[i] }));
+  st.innerHTML = `<p class="phase">Memorice cada par</p>${timerBar(15000)}<div class="pairs">${pairs.map(p => `<div class="pairc">${shapeSVG(SHAPES[p.s], COLORS[p.s])}<span>${p.w}</span></div>`).join('')}</div>`;
+  await sleep(15000);
+  if (!alive(rid)) return;
+  const order = shuffle(pairs);
+  let k = 0, score = 0;
+  const ask = () => {
+    if (!alive(rid)) return;
+    if (k >= order.length) {
+      st.innerHTML = `<p class="phase">Los pares eran</p><div class="pairs">${pairs.map(p => `<div class="pairc">${shapeSVG(SHAPES[p.s], COLORS[p.s])}<span>${p.w}</span></div>`).join('')}</div>`;
+      finish(ex, st, rid, score, 6, '¿Usó el truco de imaginar la palabra dentro de la figura? Esa doble codificación (palabra + imagen) es la idea central del Código Dual.');
+      return;
+    }
+    const p = order[k];
+    st.innerHTML = `<p class="eyebrow">Palabra ${k + 1} de 6</p><p class="phase">¿Qué figura iba con «${p.w}»?</p><div class="choices">${range(6).map(i => `<button class="shapebtn" data-s="${i}">${shapeSVG(SHAPES[i], COLORS[i])}</button>`).join('')}</div>`;
+    st.querySelectorAll('[data-s]').forEach(b => b.onclick = async () => {
+      const ok = +b.dataset.s === p.s; if (ok) score++;
+      st.querySelectorAll('[data-s]').forEach(x => { x.disabled = true; if (+x.dataset.s === p.s) x.classList.add('ok'); });
+      if (!ok) b.classList.add('no');
+      await sleep(800); k++; ask();
+    });
+  };
+  ask();
+};
+
+/* ---------- Figuras de rotación ---------- */
+function figSVG(fig, angle, mirror) {
+  if (fig.kind === 'letter')
+    return `<svg class="fig" viewBox="-60 -60 120 120"><g transform="rotate(${angle}) scale(${mirror ? -1 : 1},1)"><text class="glyph" x="0" y="0" text-anchor="middle" dominant-baseline="central">${fig.glyph}</text></g></svg>`;
+  if (fig.kind === 'poly') {
+    const u = 17, xs = fig.cells.map(c => c[0]), ys = fig.cells.map(c => c[1]);
+    const cx = (Math.min(...xs) + Math.max(...xs) + 1) / 2, cy = (Math.min(...ys) + Math.max(...ys) + 1) / 2;
+    return `<svg class="fig" viewBox="-60 -60 120 120"><g transform="rotate(${angle}) scale(${mirror ? -1 : 1},1)">${fig.cells.map(([x, y]) => `<rect class="poly" x="${(x - cx) * u}" y="${(y - cy) * u}" width="${u}" height="${u}"/>`).join('')}</g></svg>`;
+  }
+  return cubeSVG(fig.cells, angle, mirror);
+}
+function cubeSVG(cells, angle, mirror) {
+  const n = cells.length, c = [0, 0, 0];
+  cells.forEach(p => { c[0] += p[0] / n; c[1] += p[1] / n; c[2] += p[2] / n; });
+  const set = new Set(cells.map(p => p.join(',')));
+  const a = (angle + 30) * Math.PI / 180, t = 24 * Math.PI / 180;
+  const ca = Math.cos(a), sa = Math.sin(a), ct = Math.cos(t), sn = Math.sin(t);
+  const tf = ([x, y, z]) => { if (mirror) x = -x; const x1 = x * ca + z * sa, z1 = -x * sa + z * ca; return [x1, y * ct - z1 * sn, y * sn + z1 * ct]; };
+  const S = 17, faces = [];
+  for (const p of cells) {
+    const q = [p[0] - c[0], p[1] - c[1], p[2] - c[2]];
+    for (let ax = 0; ax < 3; ax++) for (const sg of [-1, 1]) {
+      const nb = [...p]; nb[ax] += sg;
+      if (set.has(nb.join(','))) continue;
+      const nrm = [0, 0, 0]; nrm[ax] = sg;
+      if (tf(nrm)[2] <= 0.001) continue;
+      const u = (ax + 1) % 3, v = (ax + 2) % 3;
+      const corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([du, dv]) => { const k = [...q]; k[ax] += sg * .5; k[u] += du * .5; k[v] += dv * .5; return tf(k); });
+      faces.push({ corners, depth: corners.reduce((s, k) => s + k[2], 0) / 4, cls: ax === 1 ? 'ft' : (ax === 0 ? 'fx' : 'fz') });
+    }
+  }
+  faces.sort((f, g) => f.depth - g.depth);
+  return `<svg class="fig cube" viewBox="-85 -85 170 170">${faces.map(f => `<polygon class="${f.cls}" points="${f.corners.map(k => (k[0] * S).toFixed(1) + ',' + (-k[1] * S).toFixed(1)).join(' ')}"/>`).join('')}</svg>`;
+}
+
+async function runRot(ex, st, rid) {
+  await startBox(st, 'Cuando presione el botón aparecerán las dos figuras y empezará a contar el tiempo. En computadora puede usar las teclas <kbd>I</kbd> (igual) y <kbd>E</kbd> (espejo).', 'Estoy listo');
+  if (!alive(rid)) return;
+  st.innerHTML = `<div class="pair">
+      <div class="figbox"><span>Modelo</span>${figSVG(ex.fig, 0, false)}</div>
+      <div class="figbox"><span>Comparación</span>${figSVG(ex.fig, ex.angle, ex.mirror)}</div>
+    </div>
+    <div class="row" id="acts"><button class="btn primary" data-a="same">Es la misma (I)</button><button class="btn primary" data-a="mirror">Es el espejo (E)</button></div>`;
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  const t0 = performance.now();
+  let done = false;
+  const answer = (choice) => {
+    if (done || !alive(rid)) return;
+    done = true; document.removeEventListener('keydown', onKey);
+    const rt = performance.now() - t0;
+    const ok = (choice === 'mirror') === ex.mirror;
+    st.querySelector('#acts').remove();
+    finish(ex, st, rid, ok ? 1 : 0, 1,
+      `${ok ? 'Correcto.' : 'Incorrecto.'} La figura estaba girada <strong>${ex.angle}°</strong> y ${ex.mirror ? 'era <strong>su espejo</strong>' : 'era <strong>la misma</strong>'}. Tiempo de respuesta: <strong>${fmt(rt / 1000)} s</strong>.`,
+      { rt: Math.round(rt), angle: ex.angle, label: (ok ? '✓ ' : '✗ ') + fmt(rt / 1000) + ' s' });
+  };
+  const onKey = e => { if (!alive(rid)) { document.removeEventListener('keydown', onKey); return; }
+    const k = e.key.toLowerCase(); if (k === 'i') answer('same'); else if (k === 'e') answer('mirror'); };
+  document.addEventListener('keydown', onKey);
+  st.querySelectorAll('[data-a]').forEach(b => b.onclick = () => answer(b.dataset.a));
+}
+
+/* ---------- Actividades en clase ---------- */
+const MORNING = [
+  { t:'Al despertar', qs:['¿Qué fue lo primero que vio al abrir los ojos?', '¿De qué lado de la cama se levantó?', '¿Ya había luz afuera o todavía estaba oscuro?'] },
+  { t:'Antes de salir de la casa', qs:['¿Dónde estaban las llaves, la billetera y el celular?', '¿En qué orden los tomó?', '¿Revisó si llevaba todo? ¿Cómo lo hizo: tocando las bolsas o «viendo» la lista en la mente?'] },
+  { t:'El camino', qs:['Al salir de la casa, ¿giró a la derecha o a la izquierda?', 'Nombre tres cosas que vio en el camino.', '¿Qué tenía a su derecha en el primer alto o en la parada del bus?'] },
+  { t:'Al entrar a la universidad', qs:['¿Por cuál entrada pasó?', '¿Qué fue lo primero que hizo al llegar?', '¿Con quién habló primero?'] },
+  { t:'En el gimnasio o haciendo ejercicio', qs:['¿Qué fue lo primero que hizo al entrar?', '¿En qué orden hizo los ejercicios?', 'Si hoy no fue, recuerde la última vez. ¿El recuerdo es igual de nítido?'] },
+  { t:'Del punto A al punto B', qs:['Imagine que está en la entrada de la universidad. Explique en voz baja cómo llegar a esta aula.', '¿Tuvo que «girar» el mapa en su mente para saber si era a la derecha o a la izquierda?', '¿Recorrió el camino paso a paso o «saltó» directo al aula?'] }
+];
+const CONF = [['claro','Lo veo claro'], ['medio','Más o menos'], ['supuesto','Creo que lo estoy suponiendo']];
+RUN.morning = async (ex, st, rid) => {
+  await startBox(st, 'Son seis etapas. El facilitador lee las preguntas en voz alta y deja unos 30 segundos por etapa. No hace falta escribir nada.', 'Empezar el recorrido');
+  if (!alive(rid)) return;
+  const answers = [];
+  let k = 0;
+  const step = () => {
+    if (!alive(rid)) return;
+    if (k >= MORNING.length) return end();
+    const s = MORNING[k];
+    st.innerHTML = `<p class="eyebrow">Etapa ${k + 1} de ${MORNING.length}</p><h3>${s.t}</h3>${timerBar(30000)}
+      <ol class="steplist">${s.qs.map(q => `<li>${q}</li>`).join('')}</ol>
+      <div class="conf"><p class="sub">¿Qué tan seguro está de lo que recordó?</p><div class="row">${CONF.map(([v, l]) => `<button class="btn" data-c="${v}">${l}</button>`).join('')}</div></div>
+      <div class="row"><button class="btn primary" id="nx" disabled>${k === MORNING.length - 1 ? 'Terminar' : 'Siguiente etapa →'}</button></div>`;
+    let pick = null;
+    st.querySelectorAll('[data-c]').forEach(b => b.onclick = () => {
+      pick = b.dataset.c; st.querySelectorAll('[data-c]').forEach(x => x.classList.toggle('on', x === b));
+      st.querySelector('#nx').disabled = false;
+    });
+    st.querySelector('#nx').onclick = () => { answers.push(pick); k++; step(); };
+  };
+  const end = () => {
+    const n = v => answers.filter(a => a === v).length;
+    st.innerHTML = `<p class="phase">Así se sintió su recorrido</p>
+      <div class="review">${CONF.map(([v, l]) => `<div><b>${n(v)}</b><span>${l}</span></div>`).join('')}</div>
+      <div class="reflect">
+        <p><strong>¿Lo que recordamos es lo que de verdad pasó?</strong></p>
+        <p>Para responder, la mente vuelve a armar la escena: recorre la casa, gira el mapa del camino y ubica los objetos. Pero cuando un detalle no quedó guardado, lo rellena con lo que «normalmente» pasa. Por eso podemos estar muy seguros de algo que en realidad estamos suponiendo.</p>
+        <p><strong>Para conversar en parejas:</strong> ¿en qué etapa hubo más dudas? ¿Alguien puede comprobar un detalle con una foto o un mensaje del celular?</p>
+      </div>`;
+    finish(ex, st, rid, n('claro'), MORNING.length, 'Recordar el día y llegar de un punto A a un punto B usa los mismos procesos que practicamos: escaneo de la escena, rotación del mapa mental y unión de palabras con imágenes.', { label: `${n('claro')} de ${MORNING.length} etapas claras` });
+  };
+  step();
+};
+
+const person = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><circle class="sc-line" cx="0" cy="-34" r="8"/><path class="sc-line" d="M0,-26 L0,0 M0,-18 L-11,-6 M0,-18 L11,-6 M0,0 L-9,18 M0,0 L9,18"/></g>`;
+const SCENES = [
+  { cap:'Sofía se despertó a las 6:40. Afuera estaba lloviendo.', svg:`
+    <rect class="sc-wall" width="320" height="200"/>
+    <rect class="sc-bg" x="200" y="26" width="92" height="72" rx="4"/><rect class="sc-line" x="200" y="26" width="92" height="72" rx="4"/><path class="sc-line" d="M246,26 V98"/>
+    ${[[212,36],[230,52],[258,40],[276,58],[216,70],[262,76],[238,82]].map(([x, y]) => `<path d="M${x},${y} l-4,10" style="stroke:var(--c2);stroke-width:2.5;stroke-linecap:round"/>`).join('')}
+    <rect class="sc-bg" x="104" y="34" width="70" height="36" rx="6"/><rect class="sc-line" x="104" y="34" width="70" height="36" rx="6"/><text class="sc-txt" x="139" y="58" text-anchor="middle">6:40</text>
+    <rect x="22" y="128" width="160" height="34" rx="6" style="fill:var(--c5)"/><rect class="sc-soft" x="28" y="116" width="44" height="18" rx="7"/>
+    <circle class="sc-line" cx="56" cy="114" r="9" style="fill:var(--bg)"/><path class="sc-line" d="M22,162 V182 M182,162 V182"/>` },
+  { cap:'Pasó por la cocina y tomó sus cosas de la mesa: primero el celular, después la billetera y por último las llaves.', svg:`
+    <rect class="sc-wall" width="320" height="200"/>
+    <rect x="36" y="118" width="248" height="12" rx="3" style="fill:var(--warm)"/><path class="sc-line" d="M50,130 V188 M270,130 V188"/>
+    <rect class="sc-ink" x="66" y="88" width="24" height="30" rx="4"/><rect x="70" y="92" width="16" height="20" rx="2" style="fill:var(--c2)"/>
+    <rect x="140" y="98" width="42" height="20" rx="4" style="fill:var(--muted)"/><path class="sc-line" d="M140,106 H182"/>
+    <circle cx="236" cy="104" r="9" style="fill:none;stroke:var(--c4);stroke-width:3"/><path d="M244,108 l18,6 m-6,-2 l2,-6 m4,8 l2,-5" style="stroke:var(--c4);stroke-width:3;fill:none;stroke-linecap:round"/>` },
+  { cap:'Junto a la puerta verde estaba su paraguas, y se lo llevó.', svg:`
+    <rect class="sc-wall" width="320" height="200"/>
+    <rect x="120" y="28" width="82" height="160" rx="3" style="fill:var(--c3)"/><circle cx="190" cy="112" r="5" class="sc-ink"/>
+    <path d="M222,120 a26,26 0 0 1 52,0 z" style="fill:var(--c1)"/><path class="sc-line" d="M248,120 V178 q0,8 -8,8 q-6,0 -6,-6"/>
+    ${person(72, 168, 1.15)}` },
+  { cap:'En la parada, dos personas ya esperaban el bus 27.', svg:`
+    <rect class="sc-wall" width="320" height="200"/><rect class="sc-soft" x="0" y="176" width="320" height="24"/>
+    <rect x="150" y="62" width="160" height="96" rx="10" style="fill:var(--c2)"/>
+    ${[166,206,246].map(x => `<rect x="${x}" y="76" width="32" height="30" rx="3" style="fill:var(--bg)"/>`).join('')}
+    <rect x="282" y="76" width="22" height="22" rx="3" style="fill:var(--bg)"/><text class="sc-txt" x="293" y="92" text-anchor="middle" style="font-size:12px">27</text>
+    <circle class="sc-ink" cx="180" cy="162" r="13"/><circle class="sc-ink" cx="280" cy="162" r="13"/>
+    <path class="sc-line" d="M22,120 V176 M14,120 h20 v14 h-20 z"/>
+    ${person(60, 158)}${person(104, 158)}` },
+  { cap:'La entrada principal estaba llena, así que entró por la puerta lateral, junto al árbol.', svg:`
+    <rect class="sc-wall" width="320" height="200"/>
+    <rect class="sc-bg" x="70" y="40" width="200" height="140"/><rect class="sc-line" x="70" y="40" width="200" height="140"/>
+    ${[96,146,196,236].map(x => `<rect class="sc-soft" x="${x}" y="58" width="22" height="22"/>`).join('')}
+    <rect class="sc-ink" x="148" y="120" width="44" height="60"/><text class="sc-txt" x="170" y="112" text-anchor="middle" style="font-size:10px">ENTRADA</text>
+    <rect x="80" y="134" width="26" height="46" style="fill:var(--warm)"/>
+    <circle cx="40" cy="110" r="28" style="fill:var(--c3)"/><path class="sc-line" d="M40,138 V180"/>
+    ${[160,172,184].map(x => `<circle cx="${x}" cy="158" r="5" class="sc-soft"/>`).join('')}` },
+  { cap:'En el aula, la pizarra tenía dibujado un cubo. Se sentó en la segunda fila, junto a la ventana.', svg:`
+    <rect class="sc-wall" width="320" height="200"/>
+    <rect class="sc-board" x="70" y="18" width="160" height="70" rx="4"/>
+    <path class="sc-chalk" d="M135,42 h22 v22 h-22 z M135,42 l10,-8 h22 l-10,8 M157,64 l10,-8 v-22"/>
+    <rect class="sc-bg" x="262" y="40" width="44" height="80"/><rect class="sc-line" x="262" y="40" width="44" height="80"/><path class="sc-line" d="M284,40 V120"/>
+    ${[0,1,2].map(r => [0,1,2,3].map(c => `<rect class="sc-soft" x="${58 + c * 50}" y="${108 + r * 30}" width="36" height="12" rx="2"/>`).join('')).join('')}
+    <circle cx="226" cy="132" r="8" style="fill:var(--c1)"/>` }
+];
+const STORY_Q = [
+  { q:'¿Qué hora marcaba el reloj?', a:'6:40', o:['6:40','7:10','6:15'] },
+  { q:'¿Dónde estaban las llaves sobre la mesa?', a:'A la derecha', o:['A la derecha','En el centro','A la izquierda'] },
+  { q:'¿De qué color era el paraguas?', a:'Rojo', o:['Rojo','Azul','Negro'] },
+  { q:'¿Qué número tenía el bus?', a:'27', o:['27','72','17'] },
+  { q:'¿Cuántas personas esperaban en la parada?', a:'Dos', o:['Dos','Tres','Una'] },
+  { q:'¿Qué desayunó Sofía en la cocina?', a:'No se mostró', o:['Café con pan','Gallo pinto','No se mostró'], trap:true },
+  { q:'¿Por cuál puerta entró a la universidad?', a:'La lateral', o:['La lateral','La principal','La trasera'] },
+  { q:'¿De qué color era la mochila de Sofía?', a:'No se mostró', o:['Azul','Negra','No se mostró'], trap:true },
+  { q:'¿Qué había dibujado en la pizarra?', a:'Un cubo', o:['Un cubo','Un cerebro','Un mapa'] },
+  { q:'¿Dónde se sentó Sofía?', a:'Segunda fila, junto a la ventana', o:['Segunda fila, junto a la ventana','Primera fila, en el centro','Al fondo, junto a la puerta'] }
+];
+RUN.story = async (ex, st, rid) => {
+  await startBox(st, 'Cada imagen se queda unos 9 segundos en pantalla. Lea la frase y fíjese en los detalles del dibujo.', 'Ver la historia');
+  if (!alive(rid)) return;
+  for (let i = 0; i < SCENES.length; i++) {
+    if (!alive(rid)) return;
+    const s = SCENES[i];
+    st.innerHTML = `<p class="eyebrow">Imagen ${i + 1} de ${SCENES.length}</p>${timerBar(9000)}
+      <svg class="scene" viewBox="0 0 320 200" role="img" aria-label="${s.cap}">${s.svg}</svg>
+      <p class="caption">${s.cap}</p><button class="btn ghost" id="skip">Siguiente imagen →</button>`;
+    await new Promise(res => { const t = setTimeout(res, 9000); st.querySelector('#skip').onclick = () => { clearTimeout(t); res(); }; });
+  }
+  if (!alive(rid)) return;
+  const picks = [];
+  let k = 0;
+  const ask = () => {
+    if (!alive(rid)) return;
+    if (k >= STORY_Q.length) return end();
+    const q = STORY_Q[k];
+    const opts = q.trap ? q.o : shuffle(q.o);
+    st.innerHTML = `<p class="eyebrow">Pregunta ${k + 1} de ${STORY_Q.length}</p><p class="phase">${q.q}</p>
+      <div class="choices">${opts.map(o => `<button class="btn" data-o="${o}">${o}</button>`).join('')}</div>`;
+    st.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { picks.push(b.dataset.o); k++; ask(); });
+  };
+  const end = () => {
+    let score = 0, trapsFell = 0;
+    const rows = STORY_Q.map((q, i) => { const ok = picks[i] === q.a; if (ok) score++; else if (q.trap) trapsFell++;
+      return `<div class="${ok ? 'ok' : 'no'}"><b>${ok ? '✓' : '✗'}</b><span>${q.q} <strong>${q.a}</strong>${ok ? '' : ` · Usted respondió: ${picks[i]}`}${q.trap ? ' · <em>pregunta trampa</em>' : ''}</span></div>`; }).join('');
+    st.innerHTML = `<p class="phase">Sus respuestas</p><div class="review">${rows}</div>
+      <div class="reflect"><p><strong>Las preguntas trampa.</strong> La historia nunca mostró el desayuno ni la mochila. ${trapsFell ? `Usted «recordó» ${trapsFell === 1 ? 'uno de esos detalles' : 'los dos detalles'}: la mente completó la escena con lo que suele pasar en una mañana.` : 'Usted no cayó en ninguna, pero en un grupo grande casi siempre alguien «recuerda» un desayuno que nunca vio.'} Esto muestra que la memoria no es una grabación: se reconstruye cada vez que recordamos.</p></div>`;
+    finish(ex, st, rid, score, STORY_Q.length, 'Las frases (código verbal) y los dibujos (código de imágenes) se apoyan entre sí. ¿Qué detalles recordó por la frase y cuáles por el dibujo?');
+  };
+  ask();
+};
+
+/* ---------- Navegación ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-open],[data-back],[data-retry],[data-tab]');
+  if (!t) return;
+  if (t.dataset.tab) { tab = t.dataset.tab; renderHome(); }
+  else if (t.dataset.open) openEx(t.dataset.open);
+  else if (t.dataset.retry) openEx(t.dataset.retry);
+  else if (t.hasAttribute('data-back')) { renderHome(); window.scrollTo({ top: 0 }); }
+});
+document.getElementById('resetwrap').addEventListener('click', e => {
+  const w = document.getElementById('resetwrap');
+  if (e.target.id === 'reset') w.innerHTML = '¿Borrar todo? <button class="reset" id="yes">Sí, borrar</button> · <button class="reset" id="no">Cancelar</button>';
+  else if (e.target.id === 'yes') { results = {}; save(); w.innerHTML = '<button class="reset" id="reset">Borrar mis resultados</button>'; renderHome(); }
+  else if (e.target.id === 'no') w.innerHTML = '<button class="reset" id="reset">Borrar mis resultados</button>';
+});
+renderHome();
+</script>
+
+</body>
+</html>
